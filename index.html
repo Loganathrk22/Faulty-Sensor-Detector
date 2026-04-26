@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Faulty Sensor Detector — Brute Force DAA</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Background grid -->
+  <div class="bg-grid"></div>
+  <div class="scanline"></div>
+
+  <div class="wrapper">
+
+    <!-- ── HEADER ── -->
+    <header>
+      <div class="header-badge">DAA PROJECT</div>
+      <h1>FAULTY SENSOR <span class="accent">DETECTOR</span></h1>
+      <p class="subtitle">Brute Force Algorithm · Design &amp; Analysis of Algorithms</p>
+      <div class="header-line"></div>
+    </header>
+
+    <!-- ── ALGORITHM INFO ── -->
+    <section class="card info-card">
+      <div class="card-label">ALGORITHM OVERVIEW</div>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-icon">⚙</span>
+          <div>
+            <strong>Method</strong>
+            <p>Compare each sensor with every other sensor and count matching readings</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <span class="info-icon">📊</span>
+          <div>
+            <strong>Time Complexity</strong>
+            <p>O(n²) — nested loop over all sensor pairs</p>
+          </div>
+        </div>
+        <div class="info-item">
+          <span class="info-icon">🎯</span>
+          <div>
+            <strong>Faulty Detection</strong>
+            <p>Sensor with the fewest matches is the outlier / faulty sensor</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── INPUT ── -->
+    <section class="card input-card">
+      <div class="card-label">INPUT SENSOR DATA</div>
+      <div class="input-area">
+        <label for="sensorInput">Enter Sensor Readings (comma-separated)</label>
+        <input
+          type="text"
+          id="sensorInput"
+          placeholder="e.g.  10, 10, 12, 10, 10"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <p class="input-hint">
+          <span class="blink">▶</span> Separate values with commas. Minimum 3 sensors required.
+        </p>
+      </div>
+      <div class="preset-label">Quick Presets:</div>
+      <div class="presets">
+        <button class="preset-btn" onclick="loadPreset('10,10,12,10,10')">10,10,12,10,10</button>
+        <button class="preset-btn" onclick="loadPreset('5,5,5,9,5')">5,5,5,9,5</button>
+        <button class="preset-btn" onclick="loadPreset('7,3,7,7,7,7')">7,3,7,7,7,7</button>
+        <button class="preset-btn" onclick="loadPreset('100,100,100,100,99')">100,100,100,100,99</button>
+      </div>
+      <button id="analyzeBtn" onclick="analyze()">
+        <span class="btn-icon">⚡</span> ANALYZE SENSORS
+      </button>
+    </section>
+
+    <!-- ── OUTPUT (hidden until analysis runs) ── -->
+    <div id="outputSection" class="hidden">
+
+      <!-- Original readings -->
+      <section class="card">
+        <div class="card-label">SENSOR READINGS</div>
+        <div id="sensorDisplay" class="sensor-display"></div>
+      </section>
+
+      <!-- Match count table -->
+      <section class="card">
+        <div class="card-label">MATCH COUNT TABLE</div>
+        <div class="table-wrap">
+          <table id="matchTable">
+            <thead>
+              <tr>
+                <th>Sensor Index</th>
+                <th>Reading Value</th>
+                <th>Match Count</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="matchTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Result banner -->
+      <section id="resultBanner" class="card result-card">
+        <div class="card-label">DETECTION RESULT</div>
+        <div class="result-grid">
+          <div class="result-item">
+            <div class="result-label">FAULTY SENSOR INDEX</div>
+            <div class="result-value" id="faultyIndex">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">FAULTY READING</div>
+            <div class="result-value accent" id="faultyReading">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">MATCH COUNT</div>
+            <div class="result-value" id="faultyMatches">—</div>
+          </div>
+          <div class="result-item">
+            <div class="result-label">TIME COMPLEXITY</div>
+            <div class="result-value mono" id="complexityDisplay">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step-by-step visualization -->
+      <section class="card">
+        <div class="card-label">STEP-BY-STEP COMPARISON VISUALIZATION</div>
+        <p class="viz-desc">Each row shows one comparison pair. ✔ = match &nbsp;|&nbsp; ✘ = mismatch</p>
+        <div id="stepViz" class="step-viz"></div>
+      </section>
+
+      <!-- Complexity note -->
+      <section class="card complexity-card">
+        <div class="card-label">COMPLEXITY ANALYSIS</div>
+        <div class="complexity-body">
+          <div class="complexity-item">
+            <span class="complexity-label">Time Complexity</span>
+            <span class="complexity-val">O(n²)</span>
+          </div>
+          <div class="complexity-item">
+            <span class="complexity-label">Space Complexity</span>
+            <span class="complexity-val">O(n)</span>
+          </div>
+          <div class="complexity-item">
+            <span class="complexity-label">Total Comparisons</span>
+            <span class="complexity-val" id="totalComparisons">—</span>
+          </div>
+          <div class="complexity-item">
+            <span class="complexity-label">Algorithm Type</span>
+            <span class="complexity-val">Brute Force</span>
+          </div>
+        </div>
+        <p class="complexity-note">
+          For <strong id="nCount">n</strong> sensors, the algorithm performs
+          <strong id="nSquared">n×(n-1)</strong> ordered comparisons (outer × inner loops),
+          making it O(n²) in time. Each match count is stored in an array of size n — O(n) space.
+        </p>
+      </section>
+
+    </div><!-- /outputSection -->
+
+    <!-- ── FOOTER ── -->
+    <footer>
+      <p>Design &amp; Analysis of Algorithms · Brute Force Approach · <span class="accent">Faulty Sensor Detection</span></p>
+      <p class="mono small">Time Complexity: O(n²) &nbsp;|&nbsp; Space Complexity: O(n)</p>
+    </footer>
+
+  </div><!-- /wrapper -->
+
+  <script src="script.js"></script>
+</body>
+</html>
